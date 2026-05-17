@@ -63,6 +63,17 @@ Then install and start:
 ./install.sh
 ```
 
+This demo was created and tested with OpenClaw CLI `2026.5.12`. The installer
+uses that version by default. To intentionally test a different OpenClaw
+release, pass it through the install command:
+
+```bash
+OPENCLAW_CLI_VERSION=2026.5.12 ./install.sh
+```
+
+Use `OPENCLAW_CLI_VERSION=latest ./install.sh` only when validating the latest
+OpenClaw release.
+
 Link WhatsApp with a QR code:
 
 ```bash
@@ -198,6 +209,7 @@ Show the dashboard URL and token:
 
 | Variable | Default | Purpose |
 |---|---:|---|
+| `OPENCLAW_CLI_VERSION` | `2026.5.12` | OpenClaw CLI npm package version installed by the prereq script |
 | `OPENCLAW_PROFILE` | `openclaw-whatsapp` | Native OpenClaw profile name |
 | `OPENCLAW_OLLAMA_MODEL` | `qwen3.6:27b` | Ollama model to pull and use |
 | `OPENCLAW_MODEL_REF` | `ollama/${OPENCLAW_OLLAMA_MODEL}` | OpenClaw model id |

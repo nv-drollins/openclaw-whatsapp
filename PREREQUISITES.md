@@ -8,7 +8,7 @@ track and install host prerequisites where possible.
 | Ubuntu with `sudo` | First-time package and service setup | Manual host requirement |
 | `git`, `curl`, `ca-certificates`, `lsof`, `python3`, `zstd` | Repo checkout, HTTP checks, service management, Ollama tar extraction | `scripts/install-host-prereqs.sh` |
 | Node.js 22+ and npm | Native OpenClaw CLI runtime and WhatsApp Web/Baileys channel | `scripts/install-host-prereqs.sh` via `nvm` if needed |
-| OpenClaw CLI | Native agent, gateway, dashboard, model config, WhatsApp channel, and skills | `scripts/install-host-prereqs.sh` via `npm install -g openclaw@latest` |
+| OpenClaw CLI | Native agent, gateway, dashboard, model config, WhatsApp channel, and skills | `scripts/install-host-prereqs.sh` via pinned `openclaw@2026.5.12`; override with `OPENCLAW_CLI_VERSION` |
 | Ollama 0.22.1 | Local model runtime on DGX Spark / GB10 | `scripts/install-ollama.sh` |
 | `qwen3.6:27b` Ollama model | Default local model for this OpenClaw WhatsApp template | `scripts/ensure-model.sh` |
 | WhatsApp account | Account linked by QR code for inbound/outbound messages | Manual |
