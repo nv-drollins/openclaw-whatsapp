@@ -1,9 +1,12 @@
 # OpenClaw WhatsApp Demo
 
 Vanilla RawClaw/OpenClaw setup for running a local Ollama-backed assistant over
-WhatsApp. This version uses OpenClaw's WhatsApp Web channel, so it does not
-need a public webhook URL. The Spark only needs outbound internet access for
-the WhatsApp Web session.
+WhatsApp. The main flow is for an attendee to link their own WhatsApp account to
+their own Spark, then chat with OpenClaw through WhatsApp self-chat.
+
+This version uses OpenClaw's WhatsApp Web channel, so it does not need a public
+webhook URL. The Spark only needs outbound internet access for the WhatsApp Web
+session.
 
 The default local model is:
 
@@ -14,13 +17,94 @@ ollama/qwen3.6:27b
 See [PREREQUISITES.md](PREREQUISITES.md) for the clean-instance requirements
 ledger.
 
+## Primary Flow
+
+Use this for a conference attendee with their own Spark and their own WhatsApp
+number.
+
+```text
+Attendee's phone number
+        |
+        | scan QR code
+        v
+OpenClaw on the attendee's Spark
+        |
+        | WhatsApp self-chat
+        v
+Attendee messages themselves and receives local OpenClaw responses
+```
+
+The attendee's WhatsApp number is both:
+
+- the linked WhatsApp Web account OpenClaw uses to send replies
+- the only number allowed to talk to that local OpenClaw instance
+
+## Quick Start
+
+Run these commands on the Spark or Ubuntu host:
+
+```bash
+git clone https://github.com/nv-drollins/openclaw-whatsapp.git
+cd openclaw-whatsapp
+chmod +x install.sh scripts/*.sh
+cp .env.example .env
+```
+
+Edit one line in `.env` and replace the placeholder with the attendee's
+WhatsApp number in international format:
+
+```bash
+WHATSAPP_ALLOW_FROM=+15551234567
+```
+
+Then install and start:
+
+```bash
+./install.sh
+```
+
+Link WhatsApp with a QR code:
+
+```bash
+./scripts/login-whatsapp.sh
+```
+
+Scan the QR code with the same WhatsApp account/number you put in
+`WHATSAPP_ALLOW_FROM`.
+
+Start or restart the gateway:
+
+```bash
+./scripts/start-demo.sh --no-install
+```
+
+Open WhatsApp on the phone, open the **Message yourself** chat, and send:
+
+```text
+Explain this local AI demo in Traditional Chinese in three bullets.
+```
+
+## Default `.env`
+
+The provided `.env.example` is set up for the personal Spark/self-chat flow:
+
+```bash
+WHATSAPP_ACCOUNT=default
+WHATSAPP_DM_POLICY=allowlist
+WHATSAPP_ALLOW_FROM=+15551234567
+WHATSAPP_SELF_CHAT_MODE=true
+WHATSAPP_GROUP_POLICY=disabled
+```
+
+The only required edit for the attendee flow is `WHATSAPP_ALLOW_FROM`.
+
 ## What You Get
 
 - Native OpenClaw on the host, with no NemoClaw/OpenShell sandbox
 - WhatsApp Web / Baileys channel setup
 - Local Ollama model setup
 - A small `conference-assistant` skill for bilingual booth/demo chats
-- Pairing-based direct-message access by default
+- Self-chat support for personal WhatsApp accounts
 - Start, stop, QR-login, status, dashboard, and smoke-test scripts
 
 ## WhatsApp Requirements
@@ -28,7 +112,7 @@ ledger.
 You need:
 
 - A WhatsApp account to link by QR code
-- Preferably a dedicated demo number
+- The attendee's WhatsApp number in international format
 - Outbound internet access from the Spark
 - The OpenClaw gateway running during the demo
 
@@ -41,95 +125,30 @@ You do not need:
 OpenClaw's current WhatsApp channel is WhatsApp Web based. The gateway owns the
 linked session and reconnect loop.
 
-## Quick Start
+## Alternate Flow: Shared Demo Number
 
-Run these commands on the Spark or Ubuntu host:
-
-```bash
-git clone https://github.com/nv-drollins/openclaw-whatsapp.git
-cd openclaw-whatsapp
-chmod +x install.sh scripts/*.sh
-cp .env.example .env
-./install.sh
-```
-
-For a simple conference demo, the default `.env` values are usually fine:
+If you want one shared demo WhatsApp number that multiple attendees message,
+use pairing mode instead of self-chat:
 
 ```bash
 WHATSAPP_DM_POLICY=pairing
+WHATSAPP_ALLOW_FROM=
+WHATSAPP_SELF_CHAT_MODE=false
 WHATSAPP_GROUP_POLICY=disabled
-WHATSAPP_ACCOUNT=default
 ```
 
-Only edit `.env` if you want to change the model, gateway port, or access
-policy.
-
-Then link WhatsApp with a QR code:
+Then link the dedicated demo phone with:
 
 ```bash
 ./scripts/login-whatsapp.sh
 ```
 
-Start or restart the gateway:
-
-```bash
-./scripts/start-demo.sh --no-install
-```
-
-## Demo Flow
-
-1. Start the demo:
-
-```bash
-./scripts/start-demo.sh
-```
-
-2. Link the WhatsApp account:
-
-```bash
-./scripts/login-whatsapp.sh
-```
-
-3. Message the linked WhatsApp number from another phone.
-
-4. If pairing mode is enabled, approve the request:
+When attendees message that number, approve each pairing request:
 
 ```bash
 openclaw --profile openclaw-whatsapp pairing list whatsapp
 openclaw --profile openclaw-whatsapp pairing approve whatsapp <CODE>
 ```
-
-5. Try a conference prompt from WhatsApp:
-
-```text
-Explain this local AI demo in Traditional Chinese in three bullets.
-```
-
-## Access Policies
-
-The default is pairing mode:
-
-```bash
-WHATSAPP_DM_POLICY=pairing
-```
-
-That is safer for a conference because unknown direct-message senders request
-access first. If you know exactly who should use the demo, use allowlist mode:
-
-```bash
-WHATSAPP_DM_POLICY=allowlist
-WHATSAPP_ALLOW_FROM=+15551234567,+886912345678
-```
-
-Open mode is possible, but it should only be used intentionally:
-
-```bash
-WHATSAPP_DM_POLICY=open
-WHATSAPP_ALLOW_FROM=*
-```
-
-Groups are disabled by default. If you enable groups, use allowlists unless you
-are intentionally running a wide-open room demo.
 
 ## Day-2 Commands
 
@@ -177,9 +196,6 @@ Show the dashboard URL and token:
 
 ## Configuration
 
-The default `.env` copied from `.env.example` is ready for a first run. Edit it
-only when you want to change one of these settings:
-
 | Variable | Default | Purpose |
 |---|---:|---|
 | `OPENCLAW_PROFILE` | `openclaw-whatsapp` | Native OpenClaw profile name |
@@ -188,15 +204,15 @@ only when you want to change one of these settings:
 | `OPENCLAW_GATEWAY_PORT` | `18796` | Dashboard/gateway port |
 | `OPENCLAW_GATEWAY_BIND` | `loopback` | Gateway bind mode; use `lan` only on trusted networks |
 | `WHATSAPP_ACCOUNT` | `default` | Optional OpenClaw WhatsApp account id |
-| `WHATSAPP_DM_POLICY` | `pairing` | Direct-message access policy |
+| `WHATSAPP_DM_POLICY` | `allowlist` | Direct-message access policy |
+| `WHATSAPP_ALLOW_FROM` | `+15551234567` | Attendee phone number to allow |
+| `WHATSAPP_SELF_CHAT_MODE` | `true` | Self-chat helper mode for personal-number demos |
 | `WHATSAPP_GROUP_POLICY` | `disabled` | Group-chat sender policy |
-| `WHATSAPP_ALLOW_FROM` | unset | Optional comma-separated or JSON allowlist of phone numbers |
 | `WHATSAPP_GROUP_ALLOW_FROM` | unset | Optional comma-separated or JSON group sender allowlist |
 | `WHATSAPP_GROUPS` | unset | Optional comma-separated or JSON group allowlist |
 | `WHATSAPP_MEDIA_MAX_MB` | `50` | Inbound/outbound media cap |
 | `WHATSAPP_SEND_READ_RECEIPTS` | `true` | Whether accepted inbound messages send read receipts |
 | `WHATSAPP_REACTION_LEVEL` | `minimal` | Reaction behavior: `off`, `ack`, `minimal`, or `extensive` |
-| `WHATSAPP_SELF_CHAT_MODE` | `false` | Self-chat helper mode for personal-number demos |
 
 ## Notes
 

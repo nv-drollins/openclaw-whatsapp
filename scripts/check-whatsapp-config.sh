@@ -18,7 +18,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-DM_POLICY="${WHATSAPP_DM_POLICY:-pairing}"
+DM_POLICY="${WHATSAPP_DM_POLICY:-allowlist}"
 GROUP_POLICY="${WHATSAPP_GROUP_POLICY:-disabled}"
 ACCOUNT="${WHATSAPP_ACCOUNT:-default}"
 
@@ -35,6 +35,17 @@ esac
 if [ "$DM_POLICY" = "open" ] && [ "${WHATSAPP_ALLOW_FROM:-}" != "*" ]; then
   echo "WHATSAPP_DM_POLICY=open requires WHATSAPP_ALLOW_FROM=*." >&2
   exit 1
+fi
+
+if [ "$DM_POLICY" = "allowlist" ]; then
+  if [ -z "${WHATSAPP_ALLOW_FROM:-}" ]; then
+    echo "WHATSAPP_DM_POLICY=allowlist requires WHATSAPP_ALLOW_FROM." >&2
+    exit 1
+  fi
+  if [ "$WHATSAPP_ALLOW_FROM" = "+15551234567" ]; then
+    echo "Replace the placeholder WHATSAPP_ALLOW_FROM=+15551234567 with the attendee's WhatsApp number." >&2
+    exit 1
+  fi
 fi
 
 if [ "$GROUP_POLICY" = "open" ] && [ "${WHATSAPP_GROUP_ALLOW_FROM:-}" != "*" ]; then
