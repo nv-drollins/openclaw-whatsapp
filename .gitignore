@@ -1,0 +1,11 @@
+logs/
+.env
+.env.*
+!.env.example
+.cache/
+.openclaw/
+*.pid
+*.log
+__pycache__/
+.pytest_cache/
+.DS_Store
