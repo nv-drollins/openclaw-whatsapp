@@ -50,17 +50,19 @@ git clone https://github.com/nv-drollins/openclaw-whatsapp.git
 cd openclaw-whatsapp
 chmod +x install.sh scripts/*.sh
 cp .env.example .env
-nano .env
 ./install.sh
 ```
 
-For a simple conference demo, the defaults are usually fine:
+For a simple conference demo, the default `.env` values are usually fine:
 
 ```bash
 WHATSAPP_DM_POLICY=pairing
 WHATSAPP_GROUP_POLICY=disabled
 WHATSAPP_ACCOUNT=default
 ```
+
+Only edit `.env` if you want to change the model, gateway port, or access
+policy.
 
 Then link WhatsApp with a QR code:
 
@@ -174,6 +176,9 @@ Show the dashboard URL and token:
 ```
 
 ## Configuration
+
+The default `.env` copied from `.env.example` is ready for a first run. Edit it
+only when you want to change one of these settings:
 
 | Variable | Default | Purpose |
 |---|---:|---|
